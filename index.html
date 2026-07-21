@@ -853,12 +853,13 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: clamp(2rem, 5vw, 4rem);
-    align-items: stretch;
+    align-items: start;
   }
 
   .contact-col {
     display: flex;
     flex-direction: column;
+    gap: 0.9rem;
   }
 
   .contact h2 {
@@ -942,26 +943,64 @@
   .directions-bar:hover { background: var(--charcoal); }
 
   .hours-box {
-    margin-top: 0.75rem;
     padding: 1.25rem 1.5rem;
     border: 1px solid rgba(28,34,96,0.12);
     border-radius: var(--radius);
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    background: var(--cloud);
   }
+
+  .hours-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.9rem;
+    gap: 0.75rem;
+  }
+
+  .hours-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: ui-monospace, 'SF Mono', 'Cascadia Code', 'Segoe UI Mono', Consolas, 'Roboto Mono', Menlo, monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+  }
+
+  .hours-status::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+  }
+
+  .hours-status.is-open {
+    color: #0F7A3D;
+    background: rgba(15,122,61,0.1);
+  }
+
+  .hours-status.is-open::before { background: #1FA854; }
+
+  .hours-status.is-closed {
+    color: var(--slate);
+    background: rgba(92,98,112,0.1);
+  }
+
+  .hours-status.is-closed::before { background: var(--slate); }
 
   .hours-list {
     display: grid;
-    gap: 0.6rem;
+    gap: 0.5rem;
   }
 
   .hours-list div {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    padding-bottom: 0.6rem;
+    padding-bottom: 0.5rem;
     border-bottom: 1px solid rgba(28,34,96,0.08);
   }
 
@@ -973,16 +1012,18 @@
   .hours-list dt {
     font-weight: 600;
     color: var(--ink-navy);
-    font-size: 0.9rem;
+    font-size: 0.88rem;
   }
 
   .hours-list dd {
     color: var(--slate);
-    font-size: 0.9rem;
+    font-size: 0.88rem;
   }
 
-  @media (max-width: 860px) {
-    .hours-box { flex-grow: 0; }
+  .hours-list div.is-today dt,
+  .hours-list div.is-today dd {
+    color: var(--ink-navy);
+    font-weight: 700;
   }
 
   /* ===== FOOTER ===== */
@@ -1674,11 +1715,18 @@
       </a>
       <!-- PLACEHOLDER HOURS: replace with your real opening hours -->
       <div class="hours-box">
-        <p class="eyebrow" style="color: var(--ink-navy); margin-bottom: 0.9rem;">Hours</p>
-        <dl class="hours-list">
-          <div><dt>Mon &ndash; Fri</dt><dd>9:00 &ndash; 17:30</dd></div>
-          <div><dt>Sat</dt><dd>By appointment</dd></div>
-          <div><dt>Sun</dt><dd>Closed</dd></div>
+        <div class="hours-header">
+          <p class="eyebrow" style="color: var(--ink-navy); margin: 0;">Hours</p>
+          <span class="hours-status" id="hoursStatus"></span>
+        </div>
+        <dl class="hours-list" id="hoursList">
+          <div data-day="1" data-open="09:00" data-close="17:30"><dt>Monday</dt><dd>9:00 &ndash; 17:30</dd></div>
+          <div data-day="2" data-open="09:00" data-close="17:30"><dt>Tuesday</dt><dd>9:00 &ndash; 17:30</dd></div>
+          <div data-day="3" data-open="09:00" data-close="17:30"><dt>Wednesday</dt><dd>9:00 &ndash; 17:30</dd></div>
+          <div data-day="4" data-open="09:00" data-close="17:30"><dt>Thursday</dt><dd>9:00 &ndash; 17:30</dd></div>
+          <div data-day="5" data-open="09:00" data-close="17:30"><dt>Friday</dt><dd>9:00 &ndash; 17:30</dd></div>
+          <div data-day="6"><dt>Saturday</dt><dd>By appointment</dd></div>
+          <div data-day="0"><dt>Sunday</dt><dd>Closed</dd></div>
         </dl>
       </div>
     </div>
@@ -1796,6 +1844,51 @@
     try { document.execCommand('copy'); } catch (err) { /* no-op */ }
     document.body.removeChild(textarea);
   }
+
+  // hours: open-now status, based on Ireland time regardless of visitor location
+  (function () {
+    const hoursList = document.getElementById('hoursList');
+    const hoursStatus = document.getElementById('hoursStatus');
+    if (!hoursList || !hoursStatus) return;
+
+    const dublinParts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/Dublin',
+      weekday: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }).formatToParts(new Date());
+
+    const weekdayMap = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+    let today = 0;
+    let hour = 0;
+    let minute = 0;
+    dublinParts.forEach((part) => {
+      if (part.type === 'weekday') today = weekdayMap[part.value];
+      if (part.type === 'hour') hour = parseInt(part.value, 10);
+      if (part.type === 'minute') minute = parseInt(part.value, 10);
+    });
+    const nowMinutes = hour * 60 + minute;
+
+    let isOpen = false;
+    const rows = hoursList.querySelectorAll('[data-day]');
+    rows.forEach((row) => {
+      const day = parseInt(row.dataset.day, 10);
+      if (day === today) {
+        row.classList.add('is-today');
+        if (row.dataset.open && row.dataset.close) {
+          const [openH, openM] = row.dataset.open.split(':').map(Number);
+          const [closeH, closeM] = row.dataset.close.split(':').map(Number);
+          const openMinutes = openH * 60 + openM;
+          const closeMinutes = closeH * 60 + closeM;
+          isOpen = nowMinutes >= openMinutes && nowMinutes < closeMinutes;
+        }
+      }
+    });
+
+    hoursStatus.textContent = isOpen ? 'Open Now' : 'Closed Now';
+    hoursStatus.classList.add(isOpen ? 'is-open' : 'is-closed');
+  })();
 
   // hero HUD live clock
   const hudClock = document.getElementById('hudClock');
