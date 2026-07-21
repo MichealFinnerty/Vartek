@@ -175,13 +175,23 @@
   nav a.nav-link:hover { color: var(--signal-cyan); }
 
   .call-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
     background: var(--signal-cyan);
     color: var(--charcoal);
-    font-weight: 700;
-    font-size: 0.9rem;
-    padding: 0.7rem 1.3rem;
-    border-radius: var(--radius);
-    white-space: nowrap;
+    border-radius: 50%;
+    transition: transform 0.15s ease;
+  }
+
+  .call-btn:hover { transform: scale(1.06); }
+
+  .call-btn svg {
+    width: 19px;
+    height: 19px;
   }
 
   .nav-toggle {
@@ -190,15 +200,28 @@
     border: none;
     cursor: pointer;
     flex-direction: column;
-    gap: 5px;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    width: 44px;
+    height: 44px;
     padding: 0.5rem;
   }
 
   .nav-toggle span {
-    width: 24px;
+    width: 22px;
     height: 2px;
     background: var(--ink-navy);
     display: block;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+  }
+
+  .nav-toggle.is-open span:first-child {
+    transform: translateY(4px) rotate(45deg);
+  }
+
+  .nav-toggle.is-open span:last-child {
+    transform: translateY(-4px) rotate(-45deg);
   }
 
   /* ===== HERO ===== */
@@ -917,10 +940,42 @@
 
   /* ===== RESPONSIVE ===== */
   @media (max-width: 860px) {
-    nav ul.nav-links { display: none; }
+    nav ul.nav-links {
+      display: none;
+      flex-direction: column;
+      align-items: flex-start;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--white);
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid rgba(28,34,96,0.08);
+      gap: 1rem;
+      box-shadow: 0 12px 24px rgba(18,19,26,0.12);
+    }
+    nav ul.nav-links.is-open {
+      display: flex;
+    }
     .nav-toggle { display: flex; }
     .about-grid, .contact-grid { grid-template-columns: 1fr; }
     .service-cards { grid-template-columns: 1fr; }
+  }
+
+  /* blur the page content while the mobile menu is open */
+  main.nav-blurred,
+  footer.nav-blurred {
+    filter: blur(10px);
+    transition: filter 0.3s ease;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    main.nav-blurred,
+    footer.nav-blurred {
+      transition: none;
+    }
   }
 
   /* reveal-on-scroll */
@@ -935,36 +990,6 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .reveal { opacity: 1; transform: none; transition: none; }
-  }
-
-  /* ===== STICKY MOBILE CALL BAR ===== */
-  .mobile-call-bar {
-    display: none;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 60;
-    background: var(--ink-navy);
-    border-top: 1px solid rgba(255,255,255,0.1);
-  }
-
-  .mobile-call-bar a {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.9rem 1rem;
-    color: var(--white);
-    font-weight: 700;
-    font-size: 0.95rem;
-    background: var(--signal-cyan);
-    color: var(--charcoal);
-  }
-
-  @media (max-width: 640px) {
-    .mobile-call-bar { display: block; }
-    body { padding-bottom: 56px; }
   }
 
   /* ===== BRAND STRIP ===== */
@@ -1223,10 +1248,6 @@
 
   .back-to-top:hover { background: var(--signal-cyan); color: var(--charcoal); }
 
-  @media (max-width: 640px) {
-    .back-to-top { bottom: 4.25rem; }
-  }
-
   @media (prefers-reduced-motion: reduce) {
     .back-to-top { transition: opacity 0.15s ease; }
   }
@@ -1247,9 +1268,13 @@
         <li><a class="nav-link" href="index.html#contact">Contact Us</a></li>
       </ul>
     </nav>
-    <a href="tel:+353613988555" class="call-btn">Call Us On 061 398555</a>
+    <a href="tel:+353613988555" class="call-btn" aria-label="Call VarTeK Security on 061 398555">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.9 21 3 13.1 3 3.8c0-.6.4-1 1-1h3.4c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8Z"></path>
+      </svg>
+    </a>
     <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" id="navToggle">
-      <span></span><span></span><span></span>
+      <span></span><span></span>
     </button>
   </div>
 </header>
@@ -1601,10 +1626,6 @@
   </div>
 </footer>
 
-<div class="mobile-call-bar">
-  <a href="tel:+353613988555">Call Now &middot; 061 398555</a>
-</div>
-
 <button class="back-to-top" id="backToTop" aria-label="Back to top">
   <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <path d="M12 19 V5"></path>
@@ -1720,18 +1741,27 @@
   // mobile nav toggle
   const navToggle = document.getElementById('navToggle');
   const navLinks = document.querySelector('.nav-links');
+  const blurTargets = document.querySelectorAll('main, footer');
+
+  function setNavOpen(open) {
+    navLinks.classList.toggle('is-open', open);
+    navToggle.classList.toggle('is-open', open);
+    navToggle.setAttribute('aria-expanded', String(open));
+    blurTargets.forEach((el) => el.classList.toggle('nav-blurred', open));
+  }
+
   navToggle.addEventListener('click', () => {
-    const isOpen = navLinks.style.display === 'flex';
-    navLinks.style.display = isOpen ? 'none' : 'flex';
-    navLinks.style.flexDirection = 'column';
-    navLinks.style.position = 'absolute';
-    navLinks.style.top = '100%';
-    navLinks.style.left = '0';
-    navLinks.style.right = '0';
-    navLinks.style.background = '#FFFFFF';
-    navLinks.style.padding = '1rem 1.5rem';
-    navLinks.style.borderBottom = '1px solid rgba(28,34,96,0.08)';
-    navToggle.setAttribute('aria-expanded', String(!isOpen));
+    setNavOpen(!navLinks.classList.contains('is-open'));
+  });
+
+  navLinks.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => setNavOpen(false));
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && navLinks.classList.contains('is-open')) {
+      setNavOpen(false);
+    }
   });
 
   // footer year
