@@ -853,7 +853,12 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: clamp(2rem, 5vw, 4rem);
-    align-items: start;
+    align-items: stretch;
+  }
+
+  .contact-col {
+    display: flex;
+    flex-direction: column;
   }
 
   .contact h2 {
@@ -935,6 +940,50 @@
   }
 
   .directions-bar:hover { background: var(--charcoal); }
+
+  .hours-box {
+    margin-top: 0.75rem;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid rgba(28,34,96,0.12);
+    border-radius: var(--radius);
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .hours-list {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .hours-list div {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid rgba(28,34,96,0.08);
+  }
+
+  .hours-list div:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .hours-list dt {
+    font-weight: 600;
+    color: var(--ink-navy);
+    font-size: 0.9rem;
+  }
+
+  .hours-list dd {
+    color: var(--slate);
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 860px) {
+    .hours-box { flex-grow: 0; }
+  }
 
   /* ===== FOOTER ===== */
   footer {
@@ -1613,7 +1662,7 @@
         <p class="form-note">We'll get back to you as soon as we can.</p>
       </form>
     </div>
-    <div>
+    <div class="contact-col">
       <div class="map-wrap" id="mapWrap">
         <iframe src="https://maps.google.com/maps?q=VarTeK%20Security%2C%20Askeaton%2C%20Limerick&t=m&z=13&output=embed" loading="lazy" title="VarTeK Security location map" allowfullscreen></iframe>
       </div>
@@ -1623,6 +1672,15 @@
         </svg>
         Get Directions
       </a>
+      <!-- PLACEHOLDER HOURS: replace with your real opening hours -->
+      <div class="hours-box">
+        <p class="eyebrow" style="color: var(--ink-navy); margin-bottom: 0.9rem;">Hours</p>
+        <dl class="hours-list">
+          <div><dt>Mon &ndash; Fri</dt><dd>9:00 &ndash; 17:30</dd></div>
+          <div><dt>Sat</dt><dd>By appointment</dd></div>
+          <div><dt>Sun</dt><dd>Closed</dd></div>
+        </dl>
+      </div>
     </div>
   </div>
 </section>
